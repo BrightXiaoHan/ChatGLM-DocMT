@@ -1,0 +1,9 @@
+torch
+peft
+sacrebleu
+accelerate
+transformers
+deepspeed
+bitsandbytes
+cpm_kernels
+sentencepiece
