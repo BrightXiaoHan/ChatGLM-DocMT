@@ -12,7 +12,6 @@ config = AutoConfig.from_pretrained(
 
 MAX_LENGTH = 2048
 pad_to = 1
-device = "cuda"
 eos_id = config.eos_token_id
 pad_token_id = config.pad_token_id
 
@@ -23,8 +22,6 @@ class DocMTDataset(Dataset):
         self.pairs = pairs
 
     def __getitem__(self, index):
-        import ipdb
-        ipdb.set_trace()
         return self.pairs[index]
 
     def __len__(self):
@@ -32,7 +29,6 @@ class DocMTDataset(Dataset):
 
 
 def collate_fn(batch):
-    global device
     input_ids = []
     labels = []
     position_ids = []
@@ -40,7 +36,7 @@ def collate_fn(batch):
     _max_length = max([len(obj["prompt"]) + len(obj["completion"]) for obj in batch])
     _max_length = (_max_length // pad_to + (_max_length % pad_to > 0)) * pad_to
 
-    attention_mask = torch.ones((len(batch), _max_length, _max_length), device=device)
+    attention_mask = torch.ones((len(batch), _max_length, _max_length))
     attention_mask.tril_()
 
     for i, obj in enumerate(batch):
@@ -54,13 +50,11 @@ def collate_fn(batch):
         position_ids.append(
             torch.stack(
                 [
-                    torch.arange(0, _max_length, device=device),
+                    torch.arange(0, _max_length),
                     torch.concat(
                         [
-                            torch.zeros(context_length - 1, device=device),
-                            torch.arange(
-                                0, _max_length - context_length + 1, device=device
-                            ),
+                            torch.zeros(context_length - 1),
+                            torch.arange(0, _max_length - context_length + 1),
                         ]
                     ),
                 ]
@@ -70,7 +64,6 @@ def collate_fn(batch):
         labels.append(
             torch.tensor(
                 [-100] * len(obj["prompt"]) + obj["completion"] + [-100] * to_pad,
-                device=device,
             ).long()
         )
 

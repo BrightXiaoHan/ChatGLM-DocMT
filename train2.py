@@ -54,7 +54,7 @@ with accelerator.main_process_first():
     model = AutoModel.from_pretrained(
         checkpoint, trust_remote_code=True, revision="main"
     )
-    model = prepare_model_for_int8_training(model)
+    # model = prepare_model_for_int8_training(model)
     model = get_peft_model(model, peft_config)
 
 
